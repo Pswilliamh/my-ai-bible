@@ -10,12 +10,13 @@
         textarea { width: 100%; height: 100px; }
         button { padding: 10px; margin: 5px; }
         footer { text-align: center; margin-top: 20px; font-size: 14px; }
+        #verse-display p { margin: 5px 0; line-height: 1.5; }
+        #verse-display strong { color: #333; margin-right: 5px; }
     </style>
 </head>
 <body>
     <h1>My AI Study Bible</h1>
 
-    <!-- Bible Text Display -->
     <div id="bible-text">
         <select id="book"><option>Select Book</option></select>
         <select id="chapter"><option>Select Chapter</option></select>
@@ -23,35 +24,30 @@
         <div id="verse-display"></div>
     </div>
 
-    <!-- AI Search -->
     <div id="ai-search">
         <input type="text" id="search-input" placeholder="Ask a Bible question...">
         <button onclick="aiSearch()">Search with AI</button>
         <div id="search-result"></div>
     </div>
 
-    <!-- Note-Taking -->
     <div id="notes">
         <textarea id="note-input" placeholder="Write your notes here..."></textarea>
         <button onclick="saveNote()">Save Note</button>
         <div id="note-list"></div>
     </div>
 
-    <!-- Podcast Section -->
     <div id="podcast">
         <button onclick="startRecording()">Start Recording</button>
         <button onclick="stopRecording()">Stop Recording</button>
         <div id="podcast-player"></div>
     </div>
 
-    <!-- Footer -->
     <footer>
         A Project Of The Spiritual Sciences Kingdom Of Heaven Consortium
     </footer>
 
     <script>
-        // Bible Books
-        const books = ["Genesis", "Exodus", "Matthew", "John"];
+        const books = ["Genesis", "Exodus", "Matthew", "John", "Acts"];
         const bookSelect = document.getElementById("book");
         books.forEach(book => {
             let option = document.createElement("option");
@@ -62,7 +58,7 @@
         bookSelect.onchange = () => {
             const chapterSelect = document.getElementById("chapter");
             chapterSelect.innerHTML = "<option>Select Chapter</option>";
-            for (let i = 1; i <= 5; i++) { // Limited to 5 for simplicity; adjust per book later
+            for (let i = 1; i <= 5; i++) {
                 let option = document.createElement("option");
                 option.text = i;
                 chapterSelect.add(option);
@@ -79,7 +75,11 @@
             fetch(`https://bible-api.com/${book}+${chapter}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("verse-display").innerHTML = data.text || "No text available.";
+                    let formattedText = "";
+                    data.verses.forEach(verse => {
+                        formattedText += `<p><strong>${verse.verse}</strong> ${verse.text}</p>`;
+                    });
+                    document.getElementById("verse-display").innerHTML = formattedText || "No text available.";
                 })
                 .catch(err => {
                     console.log("Error:", err);
@@ -87,7 +87,6 @@
                 });
         }
 
-        // AI Search
         function aiSearch() {
             const query = document.getElementById("search-input").value.toLowerCase();
             let response = "Hmm, I’m not sure about that yet. Try something else!";
@@ -103,7 +102,6 @@
             document.getElementById("search-result").innerHTML = `AI Response: ${response}`;
         }
 
-        // Notes
         function saveNote() {
             const note = document.getElementById("note-input").value;
             let notes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -118,7 +116,6 @@
         }
         displayNotes();
 
-        // Podcast Recording
         let mediaRecorder = null;
         let audioChunks = [];
 
