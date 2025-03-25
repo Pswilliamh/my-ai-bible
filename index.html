@@ -1,0 +1,44 @@
+<script>
+  async function search() {
+    const query = document.getElementById('search').value;
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '<p>Loading...</p>';
+
+    try {
+      // Real API call
+      const response = await fetch(`https://bibleapi.co/api/verses/search?text=${query}&version=kjv`);
+      const data = await response.json();
+
+      resultsDiv.innerHTML = '';
+      if (data.verses && data.verses.length > 0) {
+        data.verses.forEach(verse => {
+          const words = verse.text.split(' ');
+          const clickableText = words.map(word => `<span onclick="showDetails('${word}')" style="cursor: pointer;">${word}</span>`).join(' ');
+          resultsDiv.innerHTML += `
+            <div class="card mb-2">
+              <div class="card-body">
+                <h5 class="card-title">${verse.reference}</h5>
+                <p class="card-text">${clickableText}</p>
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
+      }
+    } catch (error) {
+      resultsDiv.innerHTML = '<p>Sorry, something went wrong. Please try again later.</p>';
+      console.error('Error:', error);
+    }
+  }
+
+  function showDetails(word) {
+    alert(`Word: ${word}\nStrong's Number: (Coming soon)\nDefinition: (Coming soon)\nEtymology: (Coming soon)`);
+  }
+
+  document.getElementById('search').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      search();
+    }
+  });
+</script>
