@@ -14,6 +14,7 @@
 <body>
     <h1>My AI Study Bible</h1>
 
+    <!-- Bible Text Display -->
     <div id="bible-text">
         <select id="book"><option>Select Book</option></select>
         <select id="chapter"><option>Select Chapter</option></select>
@@ -21,18 +22,21 @@
         <div id="verse-display"></div>
     </div>
 
+    <!-- AI Search -->
     <div id="ai-search">
         <input type="text" id="search-input" placeholder="Ask a Bible question...">
         <button onclick="aiSearch()">Search with AI</button>
         <div id="search-result"></div>
     </div>
 
+    <!-- Note-Taking -->
     <div id="notes">
         <textarea id="note-input" placeholder="Write your notes here..."></textarea>
         <button onclick="saveNote()">Save Note</button>
         <div id="note-list"></div>
     </div>
 
+    <!-- Podcast Section -->
     <div id="podcast">
         <button onclick="startRecording()">Start Recording</button>
         <button onclick="stopRecording()">Stop Recording</button>
@@ -40,6 +44,7 @@
     </div>
 
     <script>
+        // Bible Books
         const books = ["Genesis", "Exodus", "Matthew", "John"];
         const bookSelect = document.getElementById("book");
         books.forEach(book => {
@@ -69,6 +74,7 @@
                 .catch(err => console.log("Error:", err));
         }
 
+        // AI Search
         function aiSearch() {
             const query = document.getElementById("search-input").value.toLowerCase();
             let response = "Hmm, I’m not sure about that yet. Try something else!";
@@ -78,12 +84,11 @@
                 response = "Love is a big theme in the Bible! Check out 1 Corinthians 13 for a great passage.";
             } else if (query.includes("genesis")) {
                 response = "Genesis is the first book of the Bible, covering creation and the early history of humanity.";
-            } else if (query.includes("dove")) {
-                response = "The dove often symbolizes the Holy Spirit in the Bible, like in Matthew 3:16 when it descends at Jesus’ baptism. Peaceful, isn’t it?";
             }
             document.getElementById("search-result").innerHTML = `AI Response: ${response}`;
         }
 
+        // Notes
         function saveNote() {
             const note = document.getElementById("note-input").value;
             let notes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -98,6 +103,7 @@
         }
         displayNotes();
 
+        // Podcast Recording
         let mediaRecorder = null;
         let audioChunks = [];
 
@@ -137,6 +143,11 @@
                 console.log("Recording stopped!");
             } else {
                 alert("No active recording to stop!");
+            }
+        }
+    </script>
+</body>
+</html>
             }
         }        <!-- Podcast Section -->
         <div id="podcast">
