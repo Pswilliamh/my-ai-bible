@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bible Study App</title>
+    <title>My AI Study Bible</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
         #bible-text, #notes, #podcast { margin: 20px 0; }
@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Bible Study App</h1>
+    <h1>My AI Study Bible</h1>
 
     <!-- Bible Text Display -->
     <div id="bible-text">
@@ -44,8 +44,8 @@
     </div>
 
     <script>
-        // Fetch Bible books (placeholder - replace with API call)
-        const books = ["Genesis", "Exodus", "Matthew", "John"]; // Add more books
+        // Bible Books
+        const books = ["Genesis", "Exodus", "Matthew", "John"];
         const bookSelect = document.getElementById("book");
         books.forEach(book => {
             let option = document.createElement("option");
@@ -53,22 +53,20 @@
             bookSelect.add(option);
         });
 
-        // Load chapters dynamically based on book (placeholder)
         bookSelect.onchange = () => {
             const chapterSelect = document.getElementById("chapter");
             chapterSelect.innerHTML = "<option>Select Chapter</option>";
-            for (let i = 1; i <= 5; i++) { // Example: 5 chapters
+            for (let i = 1; i <= 5; i++) {
                 let option = document.createElement("option");
                 option.text = i;
                 chapterSelect.add(option);
             }
         };
 
-        // Load Bible text (replace with API call)
         function loadText() {
             const book = document.getElementById("book").value;
             const chapter = document.getElementById("chapter").value;
-            fetch(`https://bible-api.com/${book}+${chapter}`) // Example API
+            fetch(`https://bible-api.com/${book}+${chapter}`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById("verse-display").innerHTML = data.text;
@@ -76,14 +74,21 @@
                 .catch(err => console.log("Error:", err));
         }
 
-        // AI Search (placeholder - replace with real AI API)
+        // AI Search
         function aiSearch() {
-            const query = document.getElementById("search-input").value;
-            document.getElementById("search-result").innerHTML = `AI Response: Searching for "${query}" (placeholder)`;
-            // Future: Call an AI API here
+            const query = document.getElementById("search-input").value.toLowerCase();
+            let response = "Hmm, I’m not sure about that yet. Try something else!";
+            if (query.includes("jesus")) {
+                response = "Jesus is the central figure of Christianity, known as the Son of God. Want to know more about His teachings?";
+            } else if (query.includes("love")) {
+                response = "Love is a big theme in the Bible! Check out 1 Corinthians 13 for a great passage.";
+            } else if (query.includes("genesis")) {
+                response = "Genesis is the first book of the Bible, covering creation and the early history of humanity.";
+            }
+            document.getElementById("search-result").innerHTML = `AI Response: ${response}`;
         }
 
-        // Note-Taking
+        // Notes
         function saveNote() {
             const note = document.getElementById("note-input").value;
             let notes = JSON.parse(localStorage.getItem("notes") || "[]");
@@ -96,24 +101,50 @@
             const notes = JSON.parse(localStorage.getItem("notes") || "[]");
             document.getElementById("note-list").innerHTML = notes.map(n => `<p>${n}</p>`).join("");
         }
-        displayNotes(); // Load notes on start
+        displayNotes();
 
-        // Podcast Recording (basic Web Audio API example)
-        let mediaRecorder;
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                let chunks = [];
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: "audio/ogg" });
-                    const url = URL.createObjectURL(blob);
-                    document.getElementById("podcast-player").innerHTML = `<audio controls src="${url}"></audio>`;
-                };
-            });
+        // Podcast Recording
+        let mediaRecorder = null;
+        let audioChunks = [];
 
-        function startRecording() { mediaRecorder.start(); }
-        function stopRecording() { mediaRecorder.stop(); }
+        function initRecorder() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(audioChunks, { type: "audio/ogg" });
+                        const url = URL.createObjectURL(blob);
+                        document.getElementById("podcast-player").innerHTML = `<audio controls src="${url}"></audio>`;
+                        audioChunks = [];
+                    };
+                    console.log("Recorder initialized!");
+                })
+                .catch(err => {
+                    console.error("Microphone access failed:", err);
+                    alert("Couldn’t access your microphone. Please allow permission and try again.");
+                });
+        }
+        window.onload = initRecorder;
+
+        function startRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "recording") {
+                audioChunks = [];
+                mediaRecorder.start();
+                console.log("Recording started!");
+            } else {
+                alert("Recorder not ready or already recording!");
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                console.log("Recording stopped!");
+            } else {
+                alert("No active recording to stop!");
+            }
+        }
     </script>
 </body>
 </html>
