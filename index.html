@@ -1,44 +1,119 @@
-<script>
-  async function search() {
-    const query = document.getElementById('search').value;
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = '<p>Loading...</p>';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Study App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        #bible-text, #notes, #podcast { margin: 20px 0; }
+        textarea { width: 100%; height: 100px; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Bible Study App</h1>
 
-    try {
-      // Real API call
-      const response = await fetch(`https://bibleapi.co/api/verses/search?text=${query}&version=kjv`);
-      const data = await response.json();
+    <!-- Bible Text Display -->
+    <div id="bible-text">
+        <select id="book"><option>Select Book</option></select>
+        <select id="chapter"><option>Select Chapter</option></select>
+        <button onclick="loadText()">Load Text</button>
+        <div id="verse-display"></div>
+    </div>
 
-      resultsDiv.innerHTML = '';
-      if (data.verses && data.verses.length > 0) {
-        data.verses.forEach(verse => {
-          const words = verse.text.split(' ');
-          const clickableText = words.map(word => `<span onclick="showDetails('${word}')" style="cursor: pointer;">${word}</span>`).join(' ');
-          resultsDiv.innerHTML += `
-            <div class="card mb-2">
-              <div class="card-body">
-                <h5 class="card-title">${verse.reference}</h5>
-                <p class="card-text">${clickableText}</p>
-              </div>
-            </div>
-          `;
+    <!-- AI Search -->
+    <div id="ai-search">
+        <input type="text" id="search-input" placeholder="Ask a Bible question...">
+        <button onclick="aiSearch()">Search with AI</button>
+        <div id="search-result"></div>
+    </div>
+
+    <!-- Note-Taking -->
+    <div id="notes">
+        <textarea id="note-input" placeholder="Write your notes here..."></textarea>
+        <button onclick="saveNote()">Save Note</button>
+        <div id="note-list"></div>
+    </div>
+
+    <!-- Podcast Section -->
+    <div id="podcast">
+        <button onclick="startRecording()">Start Recording</button>
+        <button onclick="stopRecording()">Stop Recording</button>
+        <div id="podcast-player"></div>
+    </div>
+
+    <script>
+        // Fetch Bible books (placeholder - replace with API call)
+        const books = ["Genesis", "Exodus", "Matthew", "John"]; // Add more books
+        const bookSelect = document.getElementById("book");
+        books.forEach(book => {
+            let option = document.createElement("option");
+            option.text = book;
+            bookSelect.add(option);
         });
-      } else {
-        resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
-      }
-    } catch (error) {
-      resultsDiv.innerHTML = '<p>Sorry, something went wrong. Please try again later.</p>';
-      console.error('Error:', error);
-    }
-  }
 
-  function showDetails(word) {
-    alert(`Word: ${word}\nStrong's Number: (Coming soon)\nDefinition: (Coming soon)\nEtymology: (Coming soon)`);
-  }
+        // Load chapters dynamically based on book (placeholder)
+        bookSelect.onchange = () => {
+            const chapterSelect = document.getElementById("chapter");
+            chapterSelect.innerHTML = "<option>Select Chapter</option>";
+            for (let i = 1; i <= 5; i++) { // Example: 5 chapters
+                let option = document.createElement("option");
+                option.text = i;
+                chapterSelect.add(option);
+            }
+        };
 
-  document.getElementById('search').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-      search();
-    }
-  });
-</script>
+        // Load Bible text (replace with API call)
+        function loadText() {
+            const book = document.getElementById("book").value;
+            const chapter = document.getElementById("chapter").value;
+            fetch(`https://bible-api.com/${book}+${chapter}`) // Example API
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("verse-display").innerHTML = data.text;
+                })
+                .catch(err => console.log("Error:", err));
+        }
+
+        // AI Search (placeholder - replace with real AI API)
+        function aiSearch() {
+            const query = document.getElementById("search-input").value;
+            document.getElementById("search-result").innerHTML = `AI Response: Searching for "${query}" (placeholder)`;
+            // Future: Call an AI API here
+        }
+
+        // Note-Taking
+        function saveNote() {
+            const note = document.getElementById("note-input").value;
+            let notes = JSON.parse(localStorage.getItem("notes") || "[]");
+            notes.push(note);
+            localStorage.setItem("notes", JSON.stringify(notes));
+            displayNotes();
+        }
+
+        function displayNotes() {
+            const notes = JSON.parse(localStorage.getItem("notes") || "[]");
+            document.getElementById("note-list").innerHTML = notes.map(n => `<p>${n}</p>`).join("");
+        }
+        displayNotes(); // Load notes on start
+
+        // Podcast Recording (basic Web Audio API example)
+        let mediaRecorder;
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                let chunks = [];
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: "audio/ogg" });
+                    const url = URL.createObjectURL(blob);
+                    document.getElementById("podcast-player").innerHTML = `<audio controls src="${url}"></audio>`;
+                };
+            });
+
+        function startRecording() { mediaRecorder.start(); }
+        function stopRecording() { mediaRecorder.stop(); }
+    </script>
+</body>
+</html>
