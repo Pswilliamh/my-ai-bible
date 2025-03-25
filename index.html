@@ -9,6 +9,7 @@
         #bible-text, #notes, #podcast { margin: 20px 0; }
         textarea { width: 100%; height: 100px; }
         button { padding: 10px; margin: 5px; }
+        footer { text-align: center; margin-top: 20px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -43,6 +44,11 @@
         <div id="podcast-player"></div>
     </div>
 
+    <!-- Footer -->
+    <footer>
+        A Project Of The Spiritual Sciences Kingdom Of Heaven Consortium
+    </footer>
+
     <script>
         // Bible Books
         const books = ["Genesis", "Exodus", "Matthew", "John"];
@@ -56,7 +62,7 @@
         bookSelect.onchange = () => {
             const chapterSelect = document.getElementById("chapter");
             chapterSelect.innerHTML = "<option>Select Chapter</option>";
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 5; i++) { // Limited to 5 for simplicity; adjust per book later
                 let option = document.createElement("option");
                 option.text = i;
                 chapterSelect.add(option);
@@ -66,12 +72,19 @@
         function loadText() {
             const book = document.getElementById("book").value;
             const chapter = document.getElementById("chapter").value;
+            if (book === "Select Book" || chapter === "Select Chapter") {
+                document.getElementById("verse-display").innerHTML = "Please select a book and chapter!";
+                return;
+            }
             fetch(`https://bible-api.com/${book}+${chapter}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("verse-display").innerHTML = data.text;
+                    document.getElementById("verse-display").innerHTML = data.text || "No text available.";
                 })
-                .catch(err => console.log("Error:", err));
+                .catch(err => {
+                    console.log("Error:", err);
+                    document.getElementById("verse-display").innerHTML = "Failed to load text. Check console.";
+                });
         }
 
         // AI Search
@@ -84,6 +97,8 @@
                 response = "Love is a big theme in the Bible! Check out 1 Corinthians 13 for a great passage.";
             } else if (query.includes("genesis")) {
                 response = "Genesis is the first book of the Bible, covering creation and the early history of humanity.";
+            } else if (query.includes("dove")) {
+                response = "The dove often symbolizes the Holy Spirit in the Bible, like in Matthew 3:16 when it descends at Jesus’ baptism. Peaceful, isn’t it?";
             }
             document.getElementById("search-result").innerHTML = `AI Response: ${response}`;
         }
@@ -148,21 +163,3 @@
     </script>
 </body>
 </html>
-            }
-        }        <!-- Podcast Section -->
-        <div id="podcast">
-            <button onclick="startRecording()">Start Recording</button>
-            <button onclick="stopRecording()">Stop Recording</button>
-            <div id="podcast-player"></div>
-        </div>
-
-        <footer style="text-align: center; margin-top: 20px; font-size: 14px;">
-            A Project Of The Spiritual Sciences Kingdom Of Heaven Consortium
-        </footer>
-
-    <script>
-        // Your JavaScript code remains unchanged
-    </script>
-</body>
-</html>    </script>
-
