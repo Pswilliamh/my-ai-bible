@@ -17,64 +17,53 @@
   </div>
 
   <script>
-    let bibleData = [];
-
-    // Load TSV data when the page loads
-    window.onload = async () => {
-      try {
-        const response = await fetch('TyndaleHouseGreekNT_withMorph_tags.TSV'); // Adjust path when hosted
-        const text = await response.text();
-        bibleData = text.split('\n').slice(1).map(line => {
-          const [ref, word, strongs, pos, lemma] = line.split('\t');
-          return { ref, word, strongs, pos, lemma };
-        });
-        console.log('Bible data loaded:', bibleData.length, 'entries');
-      } catch (error) {
-        console.error('Error loading Bible data:', error);
-        document.getElementById('results').innerHTML = '<p>Error loading Bible data. Please check the TSV file.</p>';
-      }
-    };
-
     async function search() {
-      const query = document.getElementById('search').value.toLowerCase();
+      const query = document.getElementById('search').value;
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '<p>Loading...</p>';
 
-      // Filter verses containing the query word or reference
-      const results = bibleData.filter(entry => 
-        entry.word.toLowerCase().includes(query) || 
-        entry.ref.toLowerCase().includes(query)
-      ).reduce((acc, entry) => {
-        acc[entry.ref] = acc[entry.ref] || [];
-        acc[entry.ref].push(entry);
-        return acc;
-      }, {});
-
-      resultsDiv.innerHTML = '';
-      if (Object.keys(results).length > 0) {
-        for (const [ref, words] of Object.entries(results)) {
-          const clickableText = words.map(w => 
-            `<span onclick="showDetails('${w.word}', '${w.strongs}')" style="cursor: pointer;">${w.word}</span>`
-          ).join(' ');
-          resultsDiv.innerHTML += `
-            <div class="card mb-2">
-              <div class="card-body">
-                <h5 class="card-title">${ref}</h5>
-                <p class="card-text">${clickableText}</p>
-              </div>
-            </div>
-          `;
+      try {
+        // For now, using a specific verse endpoint; search needs custom handling
+        let url = `https://getbible.net/v2/kjv/John%203:16.json`; // Default to John 3:16 for testing
+        if (query.toLowerCase().includes('john 3:16')) {
+          url = `https://getbible.net/v2/kjv/John%203:16.json`;
+        } else {
+          // Mock search for "love" - we'll refine this with a real search API
+          url = `https://getbible.net/v2/kjv/1%20John%204:8.json`;
         }
-      } else {
-        resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        resultsDiv.innerHTML = '';
+        if (data && data.verses) {
+          data.verses.forEach(verse => {
+            const words = verse.text.split(' ').map(word => {
+              // Placeholder for Strong's (API doesn't include it directly yet)
+              const strongs = word.toLowerCase() === 'loved' ? 'G25' : 'N/A';
+              return `<span onclick="showDetails('${word}', '${strongs}')" style="cursor: pointer;">${word}</span>`;
+            }).join(' ');
+            resultsDiv.innerHTML += `
+              <div class="card mb-2">
+                <div class="card-body">
+                  <h5 class="card-title">${verse.book_name} ${verse.chapter}:${verse.verse}</h5>
+                  <p class="card-text">${words}</p>
+                </div>
+              </div>
+            `;
+          });
+        } else {
+          resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
+        }
+      } catch (error) {
+        resultsDiv.innerHTML = '<p>Sorry, something went wrong. Please try again later.</p>';
+        console.error('Error:', error);
       }
     }
 
     function showDetails(word, strongs) {
-      // For now, mock detailed info; we'll enhance with full Strong's later
       const details = {
-        'G25': { definition: 'To love (agapaō)', etymology: 'Present active, 1st person singular' },
-        'G1722': { definition: 'In, on, among (en)', etymology: 'Preposition' }
+        'G25': { definition: 'To love (agapaō)', etymology: 'Present active, 1st person singular' }
       };
       const info = details[strongs] || { definition: 'Not available', etymology: 'N/A' };
       alert(`Word: ${word}\nStrong's Number: ${strongs}\nDefinition: ${info.definition}\nEtymology: ${info.etymology}`);
