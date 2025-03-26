@@ -17,37 +17,33 @@
   </div>
 
   <script>
+    // Function to perform the search
     async function search() {
       const query = document.getElementById('search').value;
       const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '<p>Loading...</p>';
+      resultsDiv.innerHTML = '<p>Loading...</p>'; // Feedback while waiting
 
       try {
-        // For now, using a specific verse endpoint; search needs custom handling
-        let url = `https://getbible.net/v2/kjv/John%203:16.json`; // Default to John 3:16 for testing
-        if (query.toLowerCase().includes('john 3:16')) {
-          url = `https://getbible.net/v2/kjv/John%203:16.json`;
-        } else {
-          // Mock search for "love" - we'll refine this with a real search API
-          url = `https://getbible.net/v2/kjv/1%20John%204:8.json`;
-        }
+        // Uncomment this when hosted online or using a proxy
+        // const response = await fetch(`https://bibleapi.co/api/verses/search?text=${query}&version=kjv`);
+        // const data = await response.json();
 
-        const response = await fetch(url);
-        const data = await response.json();
+        // Mock data for now (since API might not work locally)
+        const data = {
+          verses: [
+            { reference: "John 3:16", text: "For God so loved the world..." },
+            { reference: "1 John 4:8", text: "He that loveth not knoweth not God..." }
+          ]
+        };
 
         resultsDiv.innerHTML = '';
-        if (data && data.verses) {
+        if (data.verses && data.verses.length > 0) {
           data.verses.forEach(verse => {
-            const words = verse.text.split(' ').map(word => {
-              // Placeholder for Strong's (API doesn't include it directly yet)
-              const strongs = word.toLowerCase() === 'loved' ? 'G25' : 'N/A';
-              return `<span onclick="showDetails('${word}', '${strongs}')" style="cursor: pointer;">${word}</span>`;
-            }).join(' ');
             resultsDiv.innerHTML += `
               <div class="card mb-2">
                 <div class="card-body">
-                  <h5 class="card-title">${verse.book_name} ${verse.chapter}:${verse.verse}</h5>
-                  <p class="card-text">${words}</p>
+                  <h5 class="card-title">${verse.reference}</h5>
+                  <p class="card-text">${verse.text}</p>
                 </div>
               </div>
             `;
@@ -61,14 +57,7 @@
       }
     }
 
-    function showDetails(word, strongs) {
-      const details = {
-        'G25': { definition: 'To love (agapaō)', etymology: 'Present active, 1st person singular' }
-      };
-      const info = details[strongs] || { definition: 'Not available', etymology: 'N/A' };
-      alert(`Word: ${word}\nStrong's Number: ${strongs}\nDefinition: ${info.definition}\nEtymology: ${info.etymology}`);
-    }
-
+    // Trigger search on Enter key
     document.getElementById('search').addEventListener('keypress', function(event) {
       if (event.key === 'Enter') {
         search();
