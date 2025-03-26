@@ -17,47 +17,53 @@
   </div>
 
   <script>
-    // Function to perform the search
     async function search() {
-      const query = document.getElementById('search').value;
+      const query = document.getElementById('search').value.toLowerCase();
       const resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '<p>Loading...</p>'; // Feedback while waiting
+      resultsDiv.innerHTML = '<p>Loading...</p>';
 
-      try {
-        // Uncomment this when hosted online or using a proxy
-        // const response = await fetch(`https://bibleapi.co/api/verses/search?text=${query}&version=kjv`);
-        // const data = await response.json();
+      // Mock data to test functionality
+      const mockData = {
+        verses: [
+          { reference: "John 3:16", text: "For God so loved the world that he gave his only Son", strongs: { "loved": "G25" } },
+          { reference: "1 John 4:8", text: "He that loveth not knoweth not God", strongs: { "loveth": "G25" } }
+        ]
+      };
 
-        // Mock data for now (since API might not work locally)
-        const data = {
-          verses: [
-            { reference: "John 3:16", text: "For God so loved the world..." },
-            { reference: "1 John 4:8", text: "He that loveth not knoweth not God..." }
-          ]
-        };
+      resultsDiv.innerHTML = '';
+      const filtered = mockData.verses.filter(v => 
+        v.text.toLowerCase().includes(query) || 
+        v.reference.toLowerCase().includes(query)
+      );
 
-        resultsDiv.innerHTML = '';
-        if (data.verses && data.verses.length > 0) {
-          data.verses.forEach(verse => {
-            resultsDiv.innerHTML += `
-              <div class="card mb-2">
-                <div class="card-body">
-                  <h5 class="card-title">${verse.reference}</h5>
-                  <p class="card-text">${verse.text}</p>
-                </div>
+      if (filtered.length > 0) {
+        filtered.forEach(verse => {
+          const words = verse.text.split(' ').map(word => {
+            const strongs = verse.strongs[word.toLowerCase()] || 'N/A';
+            return `<span onclick="showDetails('${word}', '${strongs}')" style="cursor: pointer;">${word}</span>`;
+          }).join(' ');
+          resultsDiv.innerHTML += `
+            <div class="card mb-2">
+              <div class="card-body">
+                <h5 class="card-title">${verse.reference}</h5>
+                <p class="card-text">${words}</p>
               </div>
-            `;
-          });
-        } else {
-          resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
-        }
-      } catch (error) {
-        resultsDiv.innerHTML = '<p>Sorry, something went wrong. Please try again later.</p>';
-        console.error('Error:', error);
+            </div>
+          `;
+        });
+      } else {
+        resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
       }
     }
 
-    // Trigger search on Enter key
+    function showDetails(word, strongs) {
+      const details = {
+        'G25': { definition: 'To love (agapaō)', etymology: 'Present active, 1st person singular' }
+      };
+      const info = details[strongs] || { definition: 'Not available', etymology: 'N/A' };
+      alert(`Word: ${word}\nStrong's Number: ${strongs}\nDefinition: ${info.definition}\nEtymology: ${info.etymology}`);
+    }
+
     document.getElementById('search').addEventListener('keypress', function(event) {
       if (event.key === 'Enter') {
         search();
