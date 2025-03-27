@@ -7,12 +7,26 @@
     body { font-family: Arial, sans-serif; margin: 20px; }
     input { padding: 5px; width: 300px; }
     button { padding: 5px 10px; }
+    #results { margin-top: 15px; }
   </style>
 </head>
 <body>
   <h1>My AI Bible</h1>
   <p>Type a word or verse to search:</p>
   <input type="text" id="search" placeholder="e.g., love, John 3:16">
-  <button onclick="alert('Search clicked!')">Search</button>
+  <button onclick="showSearch()">Search</button>
+  <div id="results"></div>
+
+  <script>
+    function showSearch() {
+      const query = document.getElementById('search').value;
+      const resultsDiv = document.getElementById('results');
+      if (query) {
+        resultsDiv.innerHTML = `<p>You searched for: <strong>${query}</strong></p>`;
+      } else {
+        resultsDiv.innerHTML = `<p>Please enter a word or verse to search!</p>`;
+      }
+    }
+  </script>
 </body>
 </html>
