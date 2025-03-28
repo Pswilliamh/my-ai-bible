@@ -27,9 +27,10 @@
       </div>
     </div>
     <div id="verses" class="mb-3" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
-    <div class="input-group mb-3">
-      <input type="text" id="search" class="form-control" placeholder="Search within verses (e.g., love)">
+    <div class="input-group mb-3" style="max-width: 400px;">
+      <input type="text" id="search" class="form-control" placeholder="Search (e.g., love)">
       <button onclick="search()" class="btn btn-primary">Search</button>
+      <button class="btn btn-secondary" onclick="alert('Record feature coming soon!')">Record</button>
     </div>
     <div id="results" class="mt-3"></div>
   </div>
@@ -44,16 +45,43 @@
     };
 
     const data = {
-      verses: [
-        { reference: "Genesis 1:1", text: "In the beginning God created the heaven and the earth.", book: "Genesis", chapter: "1" },
-        { reference: "Exodus 20:1", text: "And God spake all these words, saying,", book: "Exodus", chapter: "20" },
-        { reference: "Matthew 5:3", text: "Blessed are the poor in spirit: for theirs is the kingdom of heaven.", book: "Matthew", chapter: "5" },
-        { reference: "John 3:16", text: "For God so loved the world...", book: "John", chapter: "3" },
-        { reference: "1 John 4:8", text: "He that loveth not knoweth not God...", book: "1 John", chapter: "4" }
-      ]
+      "Genesis": {
+        "1": [
+          "In the beginning God created the heaven and the earth.",
+          "And the earth was without form, and void; and darkness was upon the face of the deep...",
+          "And God said, Let there be light: and there was light."
+        ]
+      },
+      "Exodus": {
+        "20": [
+          "And God spake all these words, saying,",
+          "I am the LORD thy God, which have brought thee out of the land of Egypt...",
+          "Thou shalt have no other gods before me."
+        ]
+      },
+      "Matthew": {
+        "5": [
+          "Blessed are the poor in spirit: for theirs is the kingdom of heaven.",
+          "Blessed are they that mourn: for they shall be comforted.",
+          "Blessed are the meek: for they shall inherit the earth."
+        ]
+      },
+      "John": {
+        "3": [
+          "For God so loved the world, that he gave his only begotten Son...",
+          "And as Moses lifted up the serpent in the wilderness...",
+          "He that believeth on him is not condemned..."
+        ]
+      },
+      "1 John": {
+        "4": [
+          "He that loveth not knoweth not God; for God is love.",
+          "In this was manifested the love of God toward us...",
+          "If we love one another, God dwelleth in us..."
+        ]
+      }
     };
 
-    // Populate chapters when a book is selected
     document.getElementById('book').addEventListener('change', function() {
       const book = this.value;
       const chapterSelect = document.getElementById('chapter');
@@ -66,10 +94,9 @@
       } else {
         chapterSelect.disabled = true;
       }
-      loadVerses(); // Load verses when book changes
+      loadVerses();
     });
 
-    // Load verses when chapter changes
     document.getElementById('chapter').addEventListener('change', loadVerses);
 
     function loadVerses() {
@@ -78,23 +105,23 @@
       const versesDiv = document.getElementById('verses');
       versesDiv.innerHTML = '';
 
-      let versesToShow = data.verses;
-      if (book) {
-        versesToShow = versesToShow.filter(verse => verse.book === book);
-      }
-      if (chapter) {
-        versesToShow = versesToShow.filter(verse => verse.chapter === chapter);
-      }
-
-      if (versesToShow.length > 0) {
-        versesToShow.forEach(verse => {
-          const words = verse.text.split(' ').map(word => {
+      if (book && chapter && data[book] && data[book][chapter]) {
+        data[book][chapter].forEach(text => {
+          const words = text.split(' ').map(word => {
             return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
           }).join(' ');
-          versesDiv.innerHTML += `<p>${verse.reference}: ${words}</p>`;
+          versesDiv.innerHTML += `<p>${words}</p>`;
+        });
+      } else if (book && !chapter) {
+        const firstChapter = Object.keys(data[book])[0];
+        data[book][firstChapter].forEach(text => {
+          const words = text.split(' ').map(word => {
+            return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
+          }).join(' ');
+          versesDiv.innerHTML += `<p>${words}</p>`;
         });
       } else {
-        versesDiv.innerHTML = '<p>No verses available for this selection.</p>';
+        versesDiv.innerHTML = '<p>Select a book and chapter to see verses.</p>';
       }
     }
 
@@ -105,24 +132,24 @@
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '<p>Loading...</p>';
 
-      let filteredVerses = data.verses.filter(verse => verse.text.toLowerCase().includes(query));
-      if (book) {
-        filteredVerses = filteredVerses.filter(verse => verse.book === book);
-      }
-      if (chapter) {
-        filteredVerses = filteredVerses.filter(verse => verse.chapter === chapter);
+      let verses = [];
+      if (book && chapter && data[book] && data[book][chapter]) {
+        verses = data[book][chapter];
+      } else if (book && !chapter) {
+        const firstChapter = Object.keys(data[book])[0];
+        verses = data[book][firstChapter];
       }
 
+      const filteredVerses = verses.filter(text => text.toLowerCase().includes(query));
       resultsDiv.innerHTML = '';
       if (filteredVerses.length > 0) {
-        filteredVerses.forEach(verse => {
-          const words = verse.text.split(' ').map(word => {
+        filteredVerses.forEach(text => {
+          const words = text.split(' ').map(word => {
             return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
           }).join(' ');
           resultsDiv.innerHTML += `
             <div class="card mb-2">
               <div class="card-body">
-                <h5 class="card-title">${verse.reference}</h5>
                 <p class="card-text">${words}</p>
               </div>
             </div>
