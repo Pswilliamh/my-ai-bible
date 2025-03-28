@@ -50,6 +50,7 @@
           "In the beginning God created the heaven and the earth.",
           "And the earth was without form, and void; and darkness was upon the face of the deep...",
           "And God said, Let there be light: and there was light."
+          // Add more Genesis 1 verses as needed for testing
         ]
       },
       "Exodus": {
@@ -110,9 +111,10 @@
           const words = text.split(' ').map(word => {
             return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
           }).join(' ');
-          versesDiv.innerHTML += `<p>${words}</p>`;
+          versesDiv.innerHTML += `<p>${words}</p>`; // No verse numbers
         });
       } else if (book && !chapter) {
+        // Show first chapter if no chapter selected
         const firstChapter = Object.keys(data[book])[0];
         data[book][firstChapter].forEach(text => {
           const words = text.split(' ').map(word => {
