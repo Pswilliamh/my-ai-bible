@@ -8,7 +8,24 @@
 <body>
   <div class="container mt-4">
     <h1>My AI Bible</h1>
-    <p>Search for a word or verse to begin your study.</p>
+    <p>Select a book and chapter, then search for a word or verse:</p>
+    <div class="row mb-3">
+      <div class="col">
+        <select id="book" class="form-select">
+          <option value="">All Books</option>
+          <option value="Genesis">Genesis</option>
+          <option value="Exodus">Exodus</option>
+          <option value="Matthew">Matthew</option>
+          <option value="John">John</option>
+          <option value="1 John">1 John</option>
+        </select>
+      </div>
+      <div class="col">
+        <select id="chapter" class="form-select" disabled>
+          <option value="">All Chapters</option>
+        </select>
+      </div>
+    </div>
     <div class="input-group mb-3">
       <input type="text" id="search" class="form-control" placeholder="Enter a word or verse (e.g., love, John 3:16)">
       <button onclick="search()" class="btn btn-primary">Search</button>
@@ -17,23 +34,56 @@
   </div>
 
   <script>
+    // Define chapter counts for each book
+    const bookChapters = {
+      "Genesis": 50,
+      "Exodus": 40,
+      "Matthew": 28,
+      "John": 21,
+      "1 John": 5
+    };
+
+    const data = {
+      verses: [
+        { reference: "Genesis 1:1", text: "In the beginning God created the heaven and the earth.", book: "Genesis", chapter: "1" },
+        { reference: "Exodus 20:1", text: "And God spake all these words, saying,", book: "Exodus", chapter: "20" },
+        { reference: "Matthew 5:3", text: "Blessed are the poor in spirit: for theirs is the kingdom of heaven.", book: "Matthew", chapter: "5" },
+        { reference: "John 3:16", text: "For God so loved the world...", book: "John", chapter: "3" },
+        { reference: "1 John 4:8", text: "He that loveth not knoweth not God...", book: "1 John", chapter: "4" }
+      ]
+    };
+
+    // Populate chapters when a book is selected
+    document.getElementById('book').addEventListener('change', function() {
+      const book = this.value;
+      const chapterSelect = document.getElementById('chapter');
+      chapterSelect.innerHTML = '<option value="">All Chapters</option>';
+      if (book && bookChapters[book]) {
+        for (let i = 1; i <= bookChapters[book]; i++) {
+          chapterSelect.innerHTML += `<option value="${i}">${i}</option>`;
+        }
+        chapterSelect.disabled = false;
+      } else {
+        chapterSelect.disabled = true;
+      }
+    });
+
     function search() {
       const query = document.getElementById('search').value.toLowerCase();
+      const book = document.getElementById('book').value;
+      const chapter = document.getElementById('chapter').value;
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '<p>Loading...</p>';
 
-      const data = {
-        verses: [
-          { reference: "Genesis 1:1", text: "In the beginning God created the heaven and the earth." },
-          { reference: "Exodus 20:1", text: "And God spake all these words, saying," },
-          { reference: "Matthew 5:3", text: "Blessed are the poor in spirit: for theirs is the kingdom of heaven." },
-          { reference: "John 3:16", text: "For God so loved the world..." },
-          { reference: "1 John 4:8", text: "He that loveth not knoweth not God..." }
-        ]
-      };
+      let filteredVerses = data.verses.filter(verse => verse.text.toLowerCase().includes(query));
+      if (book) {
+        filteredVerses = filteredVerses.filter(verse => verse.book === book);
+      }
+      if (chapter) {
+        filteredVerses = filteredVerses.filter(verse => verse.chapter === chapter);
+      }
 
       resultsDiv.innerHTML = '';
-      const filteredVerses = data.verses.filter(verse => verse.text.toLowerCase().includes(query));
       if (filteredVerses.length > 0) {
         filteredVerses.forEach(verse => {
           const words = verse.text.split(' ').map(word => {
