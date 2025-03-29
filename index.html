@@ -26,7 +26,7 @@
         </select>
       </div>
     </div>
-    <div id="verses" class="mb-3" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+    <div id="verses" class="mb-3" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
     <div class="input-group mb-3" style="max-width: 400px;">
       <input type="text" id="search" class="form-control" placeholder="Search (e.g., love)">
       <button onclick="search()" class="btn btn-primary">Search</button>
@@ -44,43 +44,7 @@
       "1 John": 5
     };
 
-    const data = {
-      "Genesis": {
-        "1": [
-          "In the beginning God created the heaven and the earth.",
-          "And the earth was without form, and void; and darkness was upon the face of the deep...",
-          "And God said, Let there be light: and there was light."
-        ]
-      },
-      "Exodus": {
-        "20": [
-          "And God spake all these words, saying,",
-          "I am the LORD thy God, which have brought thee out of the land of Egypt...",
-          "Thou shalt have no other gods before me."
-        ]
-      },
-      "Matthew": {
-        "5": [
-          "Blessed are the poor in spirit: for theirs is the kingdom of heaven.",
-          "Blessed are they that mourn: for they shall be comforted.",
-          "Blessed are the meek: for they shall inherit the earth."
-        ]
-      },
-      "John": {
-        "3": [
-          "For God so loved the world, that he gave his only begotten Son...",
-          "And as Moses lifted up the serpent in the wilderness...",
-          "He that believeth on him is not condemned..."
-        ]
-      },
-      "1 John": {
-        "4": [
-          "He that loveth not knoweth not God; for God is love.",
-          "In this was manifested the love of God toward us...",
-          "If we love one another, God dwelleth in us..."
-        ]
-      }
-    };
+    let currentVerses = []; // Store API-loaded verses for search
 
     document.getElementById('book').addEventListener('change', function() {
       const book = this.value;
@@ -99,64 +63,60 @@
 
     document.getElementById('chapter').addEventListener('change', loadVerses);
 
-    function loadVerses() {
+    async function loadVerses() {
       const book = document.getElementById('book').value;
       const chapter = document.getElementById('chapter').value;
       const versesDiv = document.getElementById('verses');
-      versesDiv.innerHTML = '';
+      versesDiv.innerHTML = '<p>Loading...</p>';
 
-      if (book && chapter && data[book] && data[book][chapter]) {
-        data[book][chapter].forEach(text => {
-          const words = text.split(' ').map(word => {
-            return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
-          }).join(' ');
-          versesDiv.innerHTML += `<p>${words}</p>`;
-        });
-      } else if (book && !chapter) {
-        const firstChapter = Object.keys(data[book])[0];
-        data[book][firstChapter].forEach(text => {
-          const words = text.split(' ').map(word => {
-            return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
-          }).join(' ');
-          versesDiv.innerHTML += `<p>${words}</p>`;
-        });
+      if (book && chapter) {
+        try {
+          const response = await fetch(`https://getbible.net/v2/KJV/${book}/${chapter}.json`);
+          const result = await response.json();
+          currentVerses = Object.values(result.verses); // Store for search
+          versesDiv.innerHTML = '';
+          currentVerses.forEach(verse => {
+            const words = verse.text.split(' ').map(word => {
+              return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
+            }).join(' ');
+            versesDiv.innerHTML += `<p>${book} ${chapter}:${verse.verse}: ${words}</p>`;
+          });
+        } catch (error) {
+          versesDiv.innerHTML = '<p>Error loading verses. Try again!</p>';
+          console.error(error);
+        }
       } else {
         versesDiv.innerHTML = '<p>Select a book and chapter to see verses.</p>';
+        currentVerses = [];
       }
     }
 
     function search() {
       const query = document.getElementById('search').value.toLowerCase();
-      const book = document.getElementById('book').value;
-      const chapter = document.getElementById('chapter').value;
       const resultsDiv = document.getElementById('results');
       resultsDiv.innerHTML = '<p>Loading...</p>';
 
-      let verses = [];
-      if (book && chapter && data[book] && data[book][chapter]) {
-        verses = data[book][chapter];
-      } else if (book && !chapter) {
-        const firstChapter = Object.keys(data[book])[0];
-        verses = data[book][firstChapter];
-      }
-
-      const filteredVerses = verses.filter(text => text.toLowerCase().includes(query));
-      resultsDiv.innerHTML = '';
-      if (filteredVerses.length > 0) {
-        filteredVerses.forEach(text => {
-          const words = text.split(' ').map(word => {
-            return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
-          }).join(' ');
-          resultsDiv.innerHTML += `
-            <div class="card mb-2">
-              <div class="card-body">
-                <p class="card-text">${words}</p>
+      if (currentVerses.length > 0) {
+        const filteredVerses = currentVerses.filter(verse => verse.text.toLowerCase().includes(query));
+        resultsDiv.innerHTML = '';
+        if (filteredVerses.length > 0) {
+          filteredVerses.forEach(verse => {
+            const words = verse.text.split(' ').map(word => {
+              return `<span style="cursor: pointer;" onclick="showDetails('${word}')">${word}</span>`;
+            }).join(' ');
+            resultsDiv.innerHTML += `
+              <div class="card mb-2">
+                <div class="card-body">
+                  <p class="card-text">${verse.chapter}:${verse.verse}: ${words}</p>
+                </div>
               </div>
-            </div>
-          `;
-        });
+            `;
+          });
+        } else {
+          resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
+        }
       } else {
-        resultsDiv.innerHTML = '<p>No results found. Try another search!</p>';
+        resultsDiv.innerHTML = '<p>Please select a book and chapter first!</p>';
       }
     }
 
