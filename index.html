@@ -71,7 +71,9 @@
 
       if (book && chapter) {
         try {
-          const response = await fetch(`https://getbible.net/v2/KJV/${book}/${chapter}.json`);
+          const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+          const apiUrl = `https://getbible.net/v2/KJV/${book}/${chapter}.json`;
+          const response = await fetch(proxyUrl + apiUrl);
           const result = await response.json();
           currentVerses = Object.values(result.verses); // Store for search
           versesDiv.innerHTML = '';
